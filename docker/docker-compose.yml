@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: ${MONGO_CONTAINER_NAME}
+    ports:
+      - "${MONGO_PORT}:27017" # Porta do MongoDB
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    networks:
+      - condocare-network
+    restart: always
+
+  adminmongo:
+    image: mrvautin/adminmongo
+    container_name: ${ADMINMONGO_CONTAINER_NAME}
+    # ports:
+    #   - "${ADMINMONGO_PORT}:1234" # Porta para acesso no navegador
+    environment:
+      CONNECTIONS__CONDOCAREREMOTE__NAME: ${ADMINMONGO_CONNECTION_NAME}
+      CONNECTIONS__CONDOCAREREMOTE__URL: mongodb://mongodb:27017/admin # Conexão MongoDB
+      CONNECTIONS__CONDOCAREREMOTE__USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      CONNECTIONS__CONDOCAREREMOTE__PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    depends_on:
+      - mongodb
+    network_mode: host
+    # networks:
+    #   - condocare-network
+    restart: always
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  condocare-network:
+    name: condocare-network # Nome exato da network
+    driver: bridge
+
